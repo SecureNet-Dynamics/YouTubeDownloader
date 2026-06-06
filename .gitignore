@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# PyInstaller
+*.spec
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+YouTubeDownloader.exe
+
+# Data files (customize as needed)
+*.csv
+TutaCuteArt-CSV-Files/
+TutaCuteArt-Vids/
+
+# Kingsoft / Application data
+KingsoftData/
+
+# IDE specific
+.project
+.pydevproject
+.settings/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+
+# Local environment variables
+.env
+.env.local
