@@ -49,6 +49,7 @@ import threading
 from datetime import datetime
 import csv
 from functools import partial
+import re
 
 class YTDLogger:
     def __init__(self, app, index):
@@ -272,16 +273,23 @@ class ModernYouTubeApp:
         self.update_download_button_state()
         
     def extract_videos_from_url(self, url):
+        # Detect if it's a channel/playlist URL
+        is_channel = any(x in url for x in ['/@', '/c/', '/channel/', '/user/', '/playlist', '/results'])
+        
         ydl_opts = {
             'quiet': True,
             'no_warnings': True,
-            'extract_flat': True,
-            'socket_timeout': 30,
-            'retries': 3,
+            'extract_flat': 'in_playlist' if is_channel else False,
+            'socket_timeout': 60,  # Increased timeout for Windows with security software
+            'retries': 5,
             'ignoreerrors': True,
             'extractor_args': {'youtube': ['player_client=android,web']},
-            'js_runtimes': {'node': {}}
         }
+        # Only add JS runtime if Node.js is available (optional fallback for Windows)
+        import shutil
+        if shutil.which('node'):
+            ydl_opts['js_runtimes'] = {'node': {}}
+        
         ydl_opts.update(self.get_cookie_opts())
         
         try:
@@ -295,25 +303,32 @@ class ModernYouTubeApp:
                     for idx, entry in enumerate(entries):
                         if not entry:
                             continue
-                            
-                        # Handle missing titles/deleted videos
-                        title = entry.get('title')
-                        if not title or title in ['[Deleted video]', '[Private video]']:
-                            continue
-                            
-                        video_id = entry.get('id') or entry.get('url')
-                        if video_id:
-                            video_url = f"https://www.youtube.com/watch?v={video_id}" if len(video_id) == 11 else video_id
+                        
+                        # Handle string entries (from extract_flat for channels)
+                        if isinstance(entry, str):
+                            # It's a video ID, construct URL
+                            video_id = entry
+                            title = f'Video {video_id}'
+                            video_url = f"https://www.youtube.com/watch?v={video_id}"
                         else:
-                            video_url = entry.get('url', 'Unknown URL')
+                            # Handle dict entries with missing titles/deleted videos
+                            title = entry.get('title')
+                            if not title or title in ['[Deleted video]', '[Private video]']:
+                                continue
                             
+                            video_id = entry.get('id') or entry.get('url')
+                            if video_id:
+                                video_url = f"https://www.youtube.com/watch?v={video_id}" if len(str(video_id)) == 11 else video_id
+                            else:
+                                video_url = entry.get('url', 'Unknown URL')
+                        
                         # Add to UI directly
                         self.root.after(0, self.add_video_to_ui, title, video_url)
                         
                         if total > 0:
                             percent = (idx + 1) / total * 100
                             self.root.after(0, lambda p=percent, i=idx+1, t=total: self.update_status(f"Extracting: {i}/{t} videos ({p:.1f}%)", '#3498db'))
-                            
+                        
                         max_vids = self.max_videos_var.get()
                         if max_vids > 0 and len(self.scraped_videos) >= max_vids:
                             break
@@ -322,6 +337,8 @@ class ModernYouTubeApp:
                     title = info.get('title', 'Unknown Title')
                     video_url = url
                     self.root.after(0, self.add_video_to_ui, title, video_url)
+                else:
+                    raise Exception("Could not extract video information. The URL may be invalid, private, or requires authentication.")
                     
         except Exception as e:
             raise Exception(f"Failed to extract videos: {str(e)}")
@@ -389,8 +406,12 @@ class ModernYouTubeApp:
             hook = partial(self.download_progress_hook, index=idx)
             logger = YTDLogger(self, idx)
             
+            # Convert path to forward slashes for Windows compatibility with yt-dlp
+            output_path = self.output_path_var.get().replace('\\', '/')
+            output_template = f"{output_path}/%(title)s.%(ext)s"
+            
             ydl_opts = {
-                'outtmpl': os.path.join(self.output_path_var.get(), '%(title)s.%(ext)s'),
+                'outtmpl': output_template,
                 'format': quality_map.get(self.quality_var.get(), "bestvideo[height<=720]+bestaudio/best[height<=720]"),
                 'merge_output_format': self.format_var.get(),
                 'quiet': False, # Allow logger to catch messages
@@ -398,9 +419,14 @@ class ModernYouTubeApp:
                 'nooverwrites': True, # Important for skipping
                 'progress_hooks': [hook],
                 'logger': logger,
+                'socket_timeout': 60,
+                'retries': 3,
                 'extractor_args': {'youtube': ['player_client=android,web']},
-                'js_runtimes': {'node': {}}
             }
+            # Only add JS runtime if Node.js is available
+            import shutil
+            if shutil.which('node'):
+                ydl_opts['js_runtimes'] = {'node': {}}
             ydl_opts.update(self.get_cookie_opts())
             
             try:
@@ -430,7 +456,6 @@ class ModernYouTubeApp:
             self.root.after(0, self.update_video_progress, index, '100%')
             
     def strip_ansi(self, text):
-        import re
         ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         return ansi_escape.sub('', text)
 

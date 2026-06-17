@@ -28,7 +28,9 @@ venv/
 ENV/
 env/
 .venv
-
+output/
+.cspell.json
+*exe
 # IDE and Editor
 .vscode/
 .idea/
