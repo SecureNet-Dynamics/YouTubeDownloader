@@ -1,100 +1,42 @@
 # YouTube Studio Pro
 
-A comprehensive Python application for downloading YouTube videos and scraping channel data. Features a modern GUI with tab-based interface for channel scraping and bulk video downloading.
+A comprehensive Python application for scraping YouTube video metadata and performing bulk downloads. Features a modern, unified GUI that easily handles playlists, channels, and individual videos.
 
 ## Features
 
-- **📹 Channel Scraper**: Extract video metadata from YouTube channels
-  - Scrape videos and shorts from channel pages
-  - Extract video URLs and titles
-  - Support for both custom handles and channel IDs
-  - Export data to CSV format
+- **🔍 Intelligent Video Fetching**: Automatically scrape and list videos from channels, playlists, or individual links.
+  - Option to include or exclude YouTube Shorts.
+  - Set limits on the maximum number of videos to fetch.
+  - Bypass YouTube's anti-bot mechanisms using browser cookies (supports Chrome, Firefox, Edge, Brave, Safari, Opera, Vivaldi).
 
-- **⬇️ Bulk Downloader**: Download multiple YouTube videos
-  - Batch download videos from URLs
-  - Customizable output directory
-  - Download progress tracking
-  - Support for various video formats
+- **⬇️ Advanced Bulk Downloader**: Download multiple YouTube videos with precision.
+  - Customizable output directories and file formats (mp4, mkv, webm).
+  - Select video quality (1080p, 720p, 480p, 360p, or Best Available).
+  - Real-time progress tracking within the UI.
+  - Auto-skips previously downloaded files to allow pausing and resuming bulk lists.
+  
+- **Auto-Bootstrapping**: The script will automatically prompt to install missing dependencies via `pip` on startup, making it extremely easy to run across environments.
 
-- **Modern GUI**: User-friendly tkinter-based interface
-  - Tabbed interface for easy navigation
-  - Status updates and progress indicators
-  - Error handling and notifications
+## Download & Installation
 
-## Requirements
+You do not need to install Python or any dependencies to use YouTube Studio Pro! 
 
-- Python 3.7+
-- Dependencies:
-  - `yt-dlp`: YouTube content extraction and downloading
-  - `pandas`: Data manipulation and analysis
-  - `tkinter`: GUI framework (included with Python)
+1. Go to the **Releases** page of this repository.
+2. Download the appropriate version for your operating system:
+   - **Windows**: Download the `.exe` file.
+   - **Linux**: Download the `.AppImage` file.
+3. Run the downloaded file directly.
 
-## Installation
-
-1. Clone or download this repository
-
-2. Install required dependencies:
-   ```bash
-   pip install yt-dlp pandas
-   ```
-
-3. Ensure Python 3.7+ is installed on your system
+*(Note: If you wish to build the application from source, please refer to [BUILD.md](BUILD.md))*
 
 ## Usage
 
-### Running the Application
+### Typical Workflow
 
-Run the main application with:
-```bash
-python YT-Downloader.py
-```
-
-The GUI will open with two tabs:
-- **Channel Scraper**: Enter a YouTube channel URL to scrape video metadata
-- **Bulk Downloader**: Enter video URLs to download content
-
-### Channel Scraper Tab
-
-1. Enter a YouTube channel URL (e.g., `https://www.youtube.com/@channelname`)
-2. Click "Scrape Channel" to extract video data
-3. Preview results in the interface
-4. Export results to CSV file
-
-### Bulk Downloader Tab
-
-1. Enter YouTube video URLs (one per line)
-2. Select output directory for downloads
-3. Click "Download Videos" to start batch downloading
-4. Monitor progress in real-time
-
-## File Descriptions
-
-- **YT-Downloader.py**: Main GUI application entry point
-- **channel_scraper.py**: Core logic for scraping YouTube channel data
-- **TutaCuteArt.csv**: Sample data file with video metadata
-- **YouTubeDownloader.spec**: PyInstaller configuration for executable compilation
-
-## Data Files
-
-- **TutaCuteArt-CSV-Files/**: Directory containing exported channel metadata (CSV files)
-- **TutaCuteArt-Vids/**: Directory for downloaded video files
-
-## Building Executable
-
-To create a standalone executable using PyInstaller:
-
-```bash
-pyinstaller YouTubeDownloader.spec
-```
-
-The compiled executable will be available in the `dist/` directory.
-
-## Notes
-
-- Requires internet connection for YouTube access
-- Respect YouTube's Terms of Service when downloading content
-- Downloaded content is saved in the specified output directory
-- CSV exports contain video titles and URLs for future reference
+1. **Fetch Videos**: Enter a YouTube URL (Channel, Playlist, or Video) in section 1. 
+2. **Browser Cookies (Anti-Bot Bypass)**: If you are downloading many videos, YouTube may block your IP address. Select your primary browser from the `Browser Cookies` dropdown to authenticate `yt-dlp` and bypass bot checks. Ensure the selected browser is fully closed before fetching/downloading.
+3. **Configure Settings**: Select your download folder, preferred format, and resolution.
+4. **Download**: Click "Download All" to begin the bulk download process. You can also export the scraped video metadata directly to a CSV file.
 
 ## License
 
