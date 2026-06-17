@@ -1,0 +1,17 @@
+# YouTube Studio Pro
+> The ultimate bulk downloader and channel scraper.
+
+## Overview
+YouTube Studio Pro is a powerful desktop application available for Windows (.exe) and Linux (.AppImage). It allows users to automatically scrape and list videos from channels, playlists, or individual links, and perform bulk downloads with high precision.
+
+## Core Features
+- **Intelligent Fetching**: Scrape videos automatically from channels or playlists. Set limits, filter YouTube Shorts, and handle massive lists easily.
+- **Anti-Bot Bypass**: Leverages installed browser cookies to seamlessly authenticate and bypass YouTube's IP blocks.
+- **Advanced Bulk Engine**: Download multiple videos concurrently. Customize resolution, format (mp4, mkv, webm), and track progress in real-time.
+- **Auto-Bootstrapping**: Automatically detects and installs missing dependencies (like yt-dlp and pandas) to run seamlessly on any environment.
+
+## Download
+You can download the latest version for your operating system directly from our [GitHub Releases page](https://github.com/SecureNet-Dynamics/YouTubeDownloader/releases). No Python installation is required to use the compiled binaries.
+
+## Developer
+Created by Fixare Studio (https://fixare.studio).
