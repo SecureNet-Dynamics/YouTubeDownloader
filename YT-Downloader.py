@@ -1,5 +1,47 @@
+import sys
+import subprocess
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+
+def check_and_install_dependencies():
+    missing = []
+    try:
+        import yt_dlp
+    except ImportError:
+        missing.append('yt-dlp')
+        
+    try:
+        import pandas
+    except ImportError:
+        missing.append('pandas')
+
+    if missing:
+        root = tk.Tk()
+        root.withdraw()
+        deps_str = ", ".join(missing)
+        msg = f"The following required packages are missing: {deps_str}\n\nWould you like to install them automatically?"
+        if messagebox.askyesno("Missing Dependencies", msg):
+            install_win = tk.Toplevel(root)
+            install_win.title("Installing Dependencies")
+            install_win.geometry("400x150")
+            
+            tk.Label(install_win, text=f"Installing: {deps_str}\n\nPlease wait, this may take a minute...", font=("Segoe UI", 10)).pack(expand=True)
+            install_win.update()
+            
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install"] + missing)
+                install_win.destroy()
+                messagebox.showinfo("Success", "Dependencies installed successfully!\n\nThe application will now start.")
+                root.destroy()
+            except Exception as e:
+                install_win.destroy()
+                messagebox.showerror("Error", f"Failed to install dependencies:\n{str(e)}\n\nPlease install manually using pip.")
+                sys.exit(1)
+        else:
+            sys.exit(1)
+
+check_and_install_dependencies()
+
 import pandas as pd
 from yt_dlp import YoutubeDL
 import os
@@ -91,6 +133,10 @@ class ModernYouTubeApp:
         ttk.Label(options_frame, text="Max videos (0=all):").pack(side='left', padx=(0, 5))
         ttk.Spinbox(options_frame, from_=0, to=10000, width=8, textvariable=self.max_videos_var).pack(side='left')
         
+        ttk.Label(options_frame, text="Browser Cookies:").pack(side='left', padx=(20, 5))
+        self.browser_var = tk.StringVar(value="None")
+        ttk.Combobox(options_frame, textvariable=self.browser_var, values=["None", "chrome", "firefox", "edge", "brave", "safari", "opera", "vivaldi"], state='readonly', width=8).pack(side='left')
+        
         # Example links
         examples_frame = ttk.Frame(options_frame)
         examples_frame.pack(side='left', padx=(20, 0))
@@ -162,6 +208,12 @@ class ModernYouTubeApp:
         self.tree.pack(side='left', fill='both', expand=True)
         scrollbar.pack(side='right', fill='y')
         
+    def get_cookie_opts(self):
+        browser = self.browser_var.get()
+        if browser != "None":
+            return {'cookiesfrombrowser': (browser,)}
+        return {}
+
     def set_example(self, example_type):
         self.url_entry.delete(0, tk.END)
         if example_type == "Channel":
@@ -227,8 +279,10 @@ class ModernYouTubeApp:
             'socket_timeout': 30,
             'retries': 3,
             'ignoreerrors': True,
-            'extractor_args': {'youtube': ['player_client=android,web']}
+            'extractor_args': {'youtube': ['player_client=android,web']},
+            'js_runtimes': {'node': {}}
         }
+        ydl_opts.update(self.get_cookie_opts())
         
         try:
             with YoutubeDL(ydl_opts) as ydl:
@@ -275,7 +329,7 @@ class ModernYouTubeApp:
     def _finalize_scraper_results(self):
         self.progress_bar.stop()
         self.progress_bar.config(mode='determinate')
-        self.progress_bar.set(0)
+        self.download_progress_var.set(0)
         self.scrape_btn.config(state='normal')
         
         if self.scraped_videos:
@@ -288,6 +342,7 @@ class ModernYouTubeApp:
     def _scraper_error(self, error_msg):
         self.progress_bar.stop()
         self.progress_bar.config(mode='determinate')
+        self.download_progress_var.set(0)
         self.scrape_btn.config(state='normal')
         self.update_status(f"❌ Error: {error_msg}", '#e74c3c')
         self.update_download_button_state()
@@ -343,8 +398,10 @@ class ModernYouTubeApp:
                 'nooverwrites': True, # Important for skipping
                 'progress_hooks': [hook],
                 'logger': logger,
-                'extractor_args': {'youtube': ['player_client=android,web']}
+                'extractor_args': {'youtube': ['player_client=android,web']},
+                'js_runtimes': {'node': {}}
             }
+            ydl_opts.update(self.get_cookie_opts())
             
             try:
                 with YoutubeDL(ydl_opts) as ydl:
@@ -355,6 +412,7 @@ class ModernYouTubeApp:
                     self.root.after(0, self.update_video_row, idx, "100%", "✅ Completed")
                     
             except Exception as e:
+                print(f"Error downloading {video['link']}: {e}")
                 self.root.after(0, self.update_video_row, idx, "Error", "❌ Failed")
                 self.root.after(0, self.update_status, f"Failed: {video['title'][:50]}", '#e74c3c')
                 
